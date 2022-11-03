@@ -2,26 +2,58 @@
 
 ## Learning Goals
 
-- Define a service class
 - Create a service class.
+- Autowire the service class.
 
 ## Introduction
 
-We may need to modify and shape data to complete user queries. We also need to
-process parameters that the client may provide. Although we could write all of
-our custom logic in a controller, it would make it difficult to maintain and
-obfuscate the controller’s main methods.
+Sometimes we want to add some more business logic to our applications, like
+processing the client's parameters more than what we have been doing. Although we
+could write all of this custom logic in a controller, it would make it difficult
+to maintain and obfuscate the main purpose of the controller - which is to handle
+the requests and responses.
 
-A service class is used for implementing business logic which can then be called
-by the controller. The service class has access to repositories and models, so
-it can utilize them for custom logic.
+We can use the `@Service` annotation, a specialization of the `@Component`
+annotation, to indicate a **service class**. Service classes are used to implement
+business logic, which can then be called by the controller. They serve as a
+service layer and will keep the controller classes cleaner.
 
-## Create a MemberService Class
+## Add the Service Class
 
-We will be using the `@Service` annotation to indicate a service class. It’s a
-specialization of the `@Component` class.
+When we created our spring-web-demo project, we created a class called
+`LunchService.java`. Let's revisit that Java file by opening it up in IntelliJ and
+adding the following code:
 
-Create a `Service` class in the `service` package and add the following code:
+```java
+package com.example.springwebdemo.service;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class LunchService {
+    public String getDailySpecial(String day) {
+        String special;
+        switch (day.toLowerCase()) {
+            case "monday":
+                special = "BLT Sandwich";
+                break;
+            case "tuesday":
+                special =  "Veggie Burger";
+                break;
+            case "wednesday":
+            case "thursday":
+                special = "Chili";
+                break;
+            case "friday":
+                special = "Mac and Cheese";
+                break;
+            default:
+                special = "Not open for lunch";
+        }
+        return special;
+    }
+}
+```
 
 ```java
 package org.example.springwebdemo.service;
