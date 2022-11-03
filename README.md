@@ -3,7 +3,7 @@
 ## Learning Goals
 
 - Create a service class.
-- Autowire the service class.
+- Add the service as a reference in the controller class.
 
 ## Introduction
 
@@ -41,6 +41,8 @@ public class LunchService {
                 special =  "Veggie Burger";
                 break;
             case "wednesday":
+                special = "Pizza";
+                break;
             case "thursday":
                 special = "Chili";
                 break;
@@ -55,74 +57,113 @@ public class LunchService {
 }
 ```
 
+As we can see in the code above, we are writing the logic to meet the last
+requirement: tell the customer the daily lunch special. We don't really want this
+`switch` statement in the controller class, as it would clutter the class and
+distract from the purpose of the controller. Therefore, we can place this type of
+business logic in the service class.
+
+## Using the Service Class
+
+Now that we have our service class established, we can use it in our controller
+class.
+
+Consider the following modifications to the controller class:
+
 ```java
-package org.example.springwebdemo.service;
+package com.example.springwebdemo.controller;
 
-import org.example.springwebdemo.model.Member;
-import org.example.springwebdemo.repository.MemberRepository;
+import com.example.springwebdemo.service.LunchService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+@RestController
+public class LunchController {
 
-@Service
-public class MemberService {
+    // Add a reference to the LunchService
+    private final LunchService lunchService;
+    
+    // Add a constructor
     @Autowired
-    MemberRepository memberRepository;
-
-    public Member createMember(Member member) {
-        return memberRepository.save(member);
+    public LunchController(LunchService lunchService) {
+        this.lunchService = lunchService;
     }
 
-    public List<Member> getMembers() {
-        return memberRepository.findAll();
+    @GetMapping("/")
+    public String index() {
+        return "Welcome to Spring Boot!";
     }
 
-    public Member getMember(Integer id) {
-        return memberRepository.findById(id).get();
+    @GetMapping("/greet")
+    //localhost:8080/greet?name=Ted
+    public String greet(@RequestParam(defaultValue = "customer") String name) {
+        return String.format("Greetings %s!", name);
     }
 
-    public Member updateMember(Integer id, Member memberData) {
-        Member member = memberRepository.findById(id).get();
-        member.setName(memberData.getName());
-        member.setEmail(memberData.getEmail());
-        return memberRepository.save(member);
+    @GetMapping("/thank")
+    //localhost:8080/thank?name=Ted
+    public String thank(@RequestParam(defaultValue = "customer") String name) {
+        return String.format("Thanks %s! Have a great day!", name);
     }
-
-    public void deleteMember(Integer id) {
-        memberRepository.deleteById(id);
+    
+    @GetMapping("/lunch-special/{day}")
+    //localhost:8080/lunch-special/monday
+    public String getLunchSpecial(@PathVariable String day) {
+        // Call the getDailySpecial method from the LunchService
+        return lunchService.getDailySpecial(day);
     }
 }
 ```
 
-### MemberRepository
+We'll first add a reference to the `LunchService` in the controller class and then
+pass it into a constructor. Notice we have introduced a new annotation called
+`@Autowired` before declaring the `LunchController` constructor. The `@Autowired`
+annotation is a way to instantiate the `lunchService` variable using "Spring
+Magic." The `LunchService` object will be automatically created and injected by
+Spring into the `LunchController` class since we are using the `@Autowired`
+annotation. Confused? Don't worry - we'll cover exactly how this works more in
+a few lessons.
 
-The `MemberRepository` object is automatically created and injected by Spring
-into the `MemberService` class because of the `@Autowired` annotation.
+Now we can actually use the `lunchService` in our controller class to call the
+`getDailySpecial()` method that we added! We'll create a new method called
+`getLunchSpecial` in our controller class that will take in a day of the week as
+a parameter and return the value of `getDailySpecial()`. Instead of using the
+`@RequestParam` annotation, like we used in the last lesson, we'll introduce a new
+annotation called `@PathVariable`. The `@PathVariable` annotation maps the
+dynamic path value to the parameter `day`.
 
-### createMember Method
+### Run the Application
 
-This method uses the default `save` method on the repository object to persist
-the member in the database.
+Let's run the application again!
 
-### getMembers Method
+This time, let's open a browser and type in
+"http://localhost:8080/lunch-special/friday" into the URL. When the browser loads,
+we should see this:
 
-It uses the `findById` method on the repository to find a record with the ID of
-`id` and returns the object.
+![lunch-special-friday](https://curriculum-content.s3.amazonaws.com/spring-mod-1/service/lunch-special-friday.png)
 
-### updateMember Method
+Mac and cheese is the meal we specified that should be returned when the day is
+Friday! Let's try this out with another day of the week. Let's try Saturday. Type
+in "http://localhost:8080/lunch-special/saturday" into the URL:
 
-We can’t simply use a default method for this method and have to add some custom
-method instead. The controller will call this method with the ID of the member
-(`id`) the client wants to update and the data (`memberData`) to update it with.
-We update the `member` instance and call the `save` method to persist the
-updated record.
+![lunch-special-saturday](https://curriculum-content.s3.amazonaws.com/spring-mod-1/service/lunch-special-saturday.png)
 
-### deleteMember
+Looks like the cafeteria is closed for lunch on Saturday.
 
-It removes the member with the ID of `id` from the database.
+Go ahead and try this on your own and make sure that the lunch special seems
+correct for the other days of the week!
 
 ## Conclusion
 
 We have added a service class to the project which allows us to separate
 business logic from controller logic and make our application more maintainable.
+
+## References
+
+- [Service Annotation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/stereotype/Service.html)
+- [Autowired Annotation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html)
+- [GetMapping Annotation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/GetMapping.html)
+- [PathVariable Annotation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/PathVariable.html)
