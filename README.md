@@ -124,8 +124,7 @@ pass it into a constructor. Notice we have introduced a new annotation called
 annotation is a way to instantiate the `lunchService` variable using "Spring
 Magic." The `LunchService` object will be automatically created and injected by
 Spring into the `LunchController` class since we are using the `@Autowired`
-annotation. Confused? Don't worry - we'll cover exactly how this works more in
-a few lessons.
+annotation. We'll cover exactly how this works more in a few lessons.
 
 Now we can actually use the `lunchService` in our controller class to call the
 `getDailySpecial()` method that we added! We'll create a new method called
@@ -133,7 +132,10 @@ Now we can actually use the `lunchService` in our controller class to call the
 a parameter and return the value of `getDailySpecial()`. Instead of using the
 `@RequestParam` annotation, like we used in the last lesson, we'll introduce a new
 annotation called `@PathVariable`. The `@PathVariable` annotation maps the
-dynamic path value to the parameter `day`.
+dynamic path value to the parameter `day`. For example, if we want to know what
+the daily lunch special is for Friday, the request URL would look like this:
+"http://localhost:8080/lunch-special/friday" where we are dynamically assigning
+the parameter `day` with the value `friday`.
 
 ### Run the Application
 
